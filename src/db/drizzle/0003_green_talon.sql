@@ -1,0 +1,1 @@
+ALTER TABLE "ticket_comments" ADD COLUMN "author_id" bigint;

@@ -21,6 +21,7 @@ export const ticketComments = pgTable("ticket_comments", {
   html_body: text().notNull(),
   plain_body: text().notNull(),
   zendesk_created_at: timestamp(),
+  author_id: bigint({ mode: "number" }),
   ...timestamps,
 });
 

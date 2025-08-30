@@ -2,7 +2,7 @@
 
 import { getTickets, getTicketEvents } from "@/lib/zendesk";
 import { upsertTicketsByZendeskId } from "@/db/crud/tickets";
-import { insertTicketComments } from "@/db/crud/ticketComments";
+import { upsertTicketComments } from "@/db/crud/ticketComments";
 
 export async function syncTicketsAction() {
   const startTime = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30; // 30 days
@@ -76,9 +76,10 @@ async function syncTicketEvents(startTime: number) {
       zendesk_created_at: childCommentEvent.created_at
         ? new Date(childCommentEvent.created_at)
         : null,
+      author_id: childCommentEvent.author_id,
     };
   });
 
-  await insertTicketComments(dbPayload);
+  await upsertTicketComments(dbPayload);
   console.log("Ticket comments synced:", dbPayload.length);
 }

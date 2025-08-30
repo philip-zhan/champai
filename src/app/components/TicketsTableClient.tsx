@@ -1,7 +1,8 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Ticket {
   id: number;
@@ -21,8 +22,13 @@ interface TicketsResponse {
   hasMore: boolean;
 }
 
-async function fetchTickets(page: number): Promise<TicketsResponse> {
-  const response = await fetch(`/api/tickets?page=${page}&limit=50`);
+interface SortConfig {
+  field: string;
+  order: "asc" | "desc";
+}
+
+async function fetchTickets(page: number, sortBy: string, sortOrder: string): Promise<TicketsResponse> {
+  const response = await fetch(`/api/tickets?page=${page}&limit=50&sortBy=${sortBy}&sortOrder=${sortOrder}`);
   if (!response.ok) {
     throw new Error("Failed to fetch tickets");
   }
@@ -30,6 +36,22 @@ async function fetchTickets(page: number): Promise<TicketsResponse> {
 }
 
 export default function TicketsTableClient() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: searchParams.get("sortBy") || "zendesk_updated_at",
+    order: (searchParams.get("sortOrder") as "asc" | "desc") || "desc"
+  });
+
+  // Update URL when sort config changes
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    params.set("sortBy", sortConfig.field);
+    params.set("sortOrder", sortConfig.order);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [sortConfig, searchParams, router]);
+
   const {
     data,
     fetchNextPage,
@@ -37,9 +59,10 @@ export default function TicketsTableClient() {
     isFetchingNextPage,
     isLoading,
     error,
+    refetch,
   } = useInfiniteQuery({
-    queryKey: ["tickets"],
-    queryFn: ({ pageParam = 1 }) => fetchTickets(pageParam),
+    queryKey: ["tickets", sortConfig.field, sortConfig.order],
+    queryFn: ({ pageParam = 1 }) => fetchTickets(pageParam, sortConfig.field, sortConfig.order),
     getNextPageParam: (lastPage, pages) => {
       if (!lastPage.hasMore) return undefined;
       return pages.length + 1;
@@ -47,6 +70,20 @@ export default function TicketsTableClient() {
     initialPageParam: 1,
     refetchInterval: 5000,
   });
+
+  const handleSort = (field: string) => {
+    setSortConfig(prev => ({
+      field,
+      order: prev.field === field && prev.order === "asc" ? "desc" : "asc"
+    }));
+  };
+
+  const getSortIcon = (field: string) => {
+    if (sortConfig.field !== field) {
+      return "↕️";
+    }
+    return sortConfig.order === "asc" ? "↑" : "↓";
+  };
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastTicketRef = useCallback(
@@ -107,11 +144,21 @@ export default function TicketsTableClient() {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Channel
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-              Created
+            <th 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+              onClick={() => handleSort("zendesk_created_at")}
+            >
+              <div className="flex items-center gap-1">
+                Created {getSortIcon("zendesk_created_at")}
+              </div>
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-              Updated
+            <th 
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+              onClick={() => handleSort("zendesk_updated_at")}
+            >
+              <div className="flex items-center gap-1">
+                Updated {getSortIcon("zendesk_updated_at")}
+              </div>
             </th>
           </tr>
         </thead>

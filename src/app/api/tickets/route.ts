@@ -6,6 +6,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
+    const sortBy = searchParams.get("sortBy") || "zendesk_updated_at";
+    const sortOrder = searchParams.get("sortOrder") || "desc";
 
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
@@ -14,8 +16,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await getTicketsPaginated(page, limit);
-    
+    if (
+      ![
+        "zendesk_created_at",
+        "zendesk_updated_at",
+        "subject",
+        "priority",
+        "status",
+      ].includes(sortBy)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid sort field" },
+        { status: 400 }
+      );
+    }
+
+    if (!["asc", "desc"].includes(sortOrder)) {
+      return NextResponse.json(
+        { error: "Invalid sort order" },
+        { status: 400 }
+      );
+    }
+
+    const result = await getTicketsPaginated(
+      page,
+      limit,
+      sortBy,
+      sortOrder as "asc" | "desc"
+    );
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -24,4 +53,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

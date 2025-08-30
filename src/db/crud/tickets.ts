@@ -42,7 +42,9 @@ export async function getAllTickets(): Promise<InferSelectModel<typeof tickets>[
 
 export async function getTicketsPaginated(
   page: number = 1,
-  limit: number = 50
+  limit: number = 50,
+  sortBy: string = "zendesk_updated_at",
+  sortOrder: "asc" | "desc" = "desc"
 ): Promise<{
   tickets: InferSelectModel<typeof tickets>[];
   total: number;
@@ -50,11 +52,33 @@ export async function getTicketsPaginated(
 }> {
   const offset = (page - 1) * limit;
   
+  // Build the order by clause based on sortBy
+  let orderByClause;
+  switch (sortBy) {
+    case "zendesk_created_at":
+      orderByClause = sortOrder === "asc" ? tickets.zendesk_created_at : tickets.zendesk_created_at;
+      break;
+    case "zendesk_updated_at":
+      orderByClause = sortOrder === "asc" ? tickets.zendesk_updated_at : tickets.zendesk_updated_at;
+      break;
+    case "subject":
+      orderByClause = sortOrder === "asc" ? tickets.subject : tickets.subject;
+      break;
+    case "priority":
+      orderByClause = sortOrder === "asc" ? tickets.priority : tickets.priority;
+      break;
+    case "status":
+      orderByClause = sortOrder === "asc" ? tickets.status : tickets.status;
+      break;
+    default:
+      orderByClause = tickets.zendesk_updated_at;
+  }
+
   const [ticketsResult, totalResult] = await Promise.all([
     db
       .select()
       .from(tickets)
-      .orderBy(tickets.zendesk_updated_at)
+      .orderBy(sortOrder === "asc" ? orderByClause : orderByClause)
       .limit(limit)
       .offset(offset),
     db.select({ count: sql<number>`count(*)` }).from(tickets)

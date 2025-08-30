@@ -81,6 +81,9 @@ export default function TicketsTableClient() {
     search: searchParams.get("search") || "",
   }));
 
+  // Separate state for search input to prevent focus loss
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+
   // Update URL when sort config or filters change (but not when syncing from URL)
   useEffect(() => {
     if (isUpdatingFromUrlRef.current) {
@@ -128,6 +131,7 @@ export default function TicketsTableClient() {
         channel: urlChannel,
         search: urlSearch,
       });
+      setSearchInput(urlSearch);
     }
   }, [searchParams, filters.priority, filters.status, filters.channel, filters.search]);
 
@@ -183,9 +187,13 @@ export default function TicketsTableClient() {
   };
 
   const handleSearchChange = (search: string) => {
-    setFilters((prev) => ({
+    setSearchInput(search);
+  };
+
+  const handleSearchSubmit = () => {
+    setFilters(prev => ({
       ...prev,
-      search,
+      search: searchInput,
     }));
   };
 
@@ -196,6 +204,7 @@ export default function TicketsTableClient() {
       channel: [],
       search: "",
     });
+    setSearchInput("");
   };
 
   const getSortIcon = (field: string) => {
@@ -270,8 +279,10 @@ export default function TicketsTableClient() {
       {/* Filters */}
       <TicketsFilters
         filters={filters}
+        searchInput={searchInput}
         onFilterChange={handleFilterChange}
         onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
         onClearFilters={clearFilters}
       />
 

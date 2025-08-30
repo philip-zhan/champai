@@ -90,10 +90,6 @@ export default function ZendeskSyncForm({ onSync }: ZendeskSyncFormProps) {
           <strong>Error:</strong> {syncState.error}
         </div>
       )}
-
-      <div className="text-sm text-gray-600 text-center max-w-md mt-4">
-        This will fetch all tickets updated in the past 30 days from Zendesk.
-      </div>
     </>
   );
 }

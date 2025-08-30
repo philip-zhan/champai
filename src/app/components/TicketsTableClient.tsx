@@ -83,7 +83,9 @@ export default function TicketsTableClient() {
   }));
 
   // Separate state for search input to prevent focus loss
-  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
+  );
 
   // Update URL when sort config or filters change (but not when syncing from URL)
   useEffect(() => {
@@ -134,7 +136,13 @@ export default function TicketsTableClient() {
       });
       setSearchInput(urlSearch);
     }
-  }, [searchParams, filters.priority, filters.status, filters.channel, filters.search]);
+  }, [
+    searchParams,
+    filters.priority,
+    filters.status,
+    filters.channel,
+    filters.search,
+  ]);
 
   useEffect(() => {
     syncFiltersFromUrl();
@@ -172,11 +180,11 @@ export default function TicketsTableClient() {
     checked: boolean
   ) => {
     setFilters((prev) => {
-      if (filterType === 'search') {
+      if (filterType === "search") {
         // Search is handled separately by handleSearchChange
         return prev;
       }
-      
+
       const filterArray = prev[filterType] as string[];
       return {
         ...prev,
@@ -192,7 +200,7 @@ export default function TicketsTableClient() {
   };
 
   const handleSearchSubmit = () => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       search: searchInput,
     }));
@@ -253,28 +261,6 @@ export default function TicketsTableClient() {
     return uniqueTickets;
   }, [data?.pages]);
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8 text-gray-500">Loading tickets...</div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-red-500">
-        Error loading tickets: {error.message}
-      </div>
-    );
-  }
-
-  if (allTickets.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        No tickets found. Run a sync from Zendesk to import tickets.
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -291,188 +277,200 @@ export default function TicketsTableClient() {
         onClearFilters={clearFilters}
       />
 
-      {/* Results Summary */}
-      <div className="text-sm text-gray-600">
-        Showing {allTickets.length} tickets
-        {(filters.priority.length > 0 ||
-          filters.status.length > 0 ||
-          filters.channel.length > 0 ||
-          filters.search.trim()) && (
-          <span className="text-blue-600"> (filtered)</span>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="text-center py-8 text-gray-500">Loading tickets...</div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-500">
+          Error loading tickets: {error.message}
+        </div>
+      ) : allTickets.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">No tickets found.</div>
+      ) : (
+        <>
+          {/* Results Summary */}
+          <div className="text-sm text-gray-600">
+            Showing {allTickets.length} tickets
+            {(filters.priority.length > 0 ||
+              filters.status.length > 0 ||
+              filters.channel.length > 0 ||
+              filters.search.trim()) && (
+              <span className="text-blue-600"> (filtered)</span>
+            )}
+          </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 w-1/3">
-                Ticket Details
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                Priority
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                Channel
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-                Comments
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                  sortConfig.field === "zendesk_created_at"
-                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-                onClick={() => handleSort("zendesk_created_at")}
-              >
-                <div className="flex items-center gap-2">
-                  <span>Created</span>
-                  {getSortIcon("zendesk_created_at")}
-                </div>
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                  sortConfig.field === "zendesk_updated_at"
-                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-                onClick={() => handleSort("zendesk_updated_at")}
-              >
-                <div className="flex items-center gap-1">
-                  <span>Updated</span>
-                  {getSortIcon("zendesk_updated_at")}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {allTickets.map((ticket, index) => {
-              const isLast = index === allTickets.length - 1;
-              return (
-                <tr
-                  key={`ticket-${ticket.id}-${index}`}
-                  ref={isLast ? lastTicketRef : undefined}
-                  className="hover:bg-gray-50"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    <div className="space-y-1">
-                      <div className="font-medium text-gray-900">
-                        {ticket.subject || ticket.raw_subject || "No subject"}
-                      </div>
-                      <div className="text-gray-600 text-xs max-w-xs">
-                        {ticket.description
-                          ? ticket.description.length > 120
-                            ? `${ticket.description.substring(0, 120)}...`
-                            : ticket.description
-                          : "No description"}
-                      </div>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 w-1/3">
+                    Ticket Details
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                    Priority
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                    Channel
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                    Comments
+                  </th>
+                  <th
+                    className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+                      sortConfig.field === "zendesk_created_at"
+                        ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+                        : "text-gray-500 hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleSort("zendesk_created_at")}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>Created</span>
+                      {getSortIcon("zendesk_created_at")}
                     </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        ticket.priority === "urgent"
-                          ? "bg-red-100 text-red-800"
-                          : ticket.priority === "high"
-                          ? "bg-orange-100 text-orange-800"
-                          : ticket.priority === "normal"
-                          ? "bg-blue-100 text-blue-800"
-                          : ticket.priority === "low"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {ticket.priority || "Not set"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        ticket.status === "open"
-                          ? "bg-green-100 text-green-800"
-                          : ticket.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : ticket.status === "solved"
-                          ? "bg-blue-100 text-blue-800"
-                          : ticket.status === "closed"
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {ticket.status || "Unknown"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                    {ticket.via_channel || "Unknown"}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center justify-center">
-                      <span
-                        className={`inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-medium rounded-full ${
-                          ticket.commentCount === 0
-                            ? "bg-gray-100 text-gray-500"
-                            : ticket.commentCount <= 3
-                            ? "bg-blue-100 text-blue-700"
-                            : ticket.commentCount <= 10
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {ticket.commentCount}
-                      </span>
+                  </th>
+                  <th
+                    className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+                      sortConfig.field === "zendesk_updated_at"
+                        ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+                        : "text-gray-500 hover:bg-gray-100"
+                    }`}
+                    onClick={() => handleSort("zendesk_updated_at")}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>Updated</span>
+                      {getSortIcon("zendesk_updated_at")}
                     </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                    {ticket.zendesk_created_at
-                      ? new Date(ticket.zendesk_created_at).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
-                      : "Unknown"}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                    {ticket.zendesk_updated_at
-                      ? new Date(ticket.zendesk_updated_at).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          }
-                        )
-                      : "Unknown"}
-                  </td>
+                  </th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {allTickets.map((ticket, index) => {
+                  const isLast = index === allTickets.length - 1;
+                  return (
+                    <tr
+                      key={`ticket-${ticket.id}-${index}`}
+                      ref={isLast ? lastTicketRef : undefined}
+                      className="hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        <div className="space-y-1">
+                          <div className="font-medium text-gray-900">
+                            {ticket.subject ||
+                              ticket.raw_subject ||
+                              "No subject"}
+                          </div>
+                          <div className="text-gray-600 text-xs max-w-xs">
+                            {ticket.description
+                              ? ticket.description.length > 120
+                                ? `${ticket.description.substring(0, 120)}...`
+                                : ticket.description
+                              : "No description"}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            ticket.priority === "urgent"
+                              ? "bg-red-100 text-red-800"
+                              : ticket.priority === "high"
+                              ? "bg-orange-100 text-orange-800"
+                              : ticket.priority === "normal"
+                              ? "bg-blue-100 text-blue-800"
+                              : ticket.priority === "low"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {ticket.priority || "Not set"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            ticket.status === "open"
+                              ? "bg-green-100 text-green-800"
+                              : ticket.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : ticket.status === "solved"
+                              ? "bg-blue-100 text-blue-800"
+                              : ticket.status === "closed"
+                              ? "bg-gray-100 text-gray-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {ticket.status || "Unknown"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.via_channel || "Unknown"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center justify-center">
+                          <span
+                            className={`inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-medium rounded-full ${
+                              ticket.commentCount === 0
+                                ? "bg-gray-100 text-gray-500"
+                                : ticket.commentCount <= 3
+                                ? "bg-blue-100 text-blue-700"
+                                : ticket.commentCount <= 10
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {ticket.commentCount}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.zendesk_created_at
+                          ? new Date(
+                              ticket.zendesk_created_at
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "Unknown"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                        {ticket.zendesk_updated_at
+                          ? new Date(
+                              ticket.zendesk_updated_at
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "Unknown"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-        {isFetchingNextPage && (
-          <div className="text-center py-4 text-gray-500">
-            Loading more tickets...
-          </div>
-        )}
+            {isFetchingNextPage && (
+              <div className="text-center py-4 text-gray-500">
+                Loading more tickets...
+              </div>
+            )}
 
-        {!hasNextPage && allTickets.length > 0 && (
-          <div className="text-center py-4 text-gray-500">
-            All tickets loaded ({allTickets.length} total)
+            {!hasNextPage && allTickets.length > 0 && (
+              <div className="text-center py-4 text-gray-500">
+                All tickets loaded ({allTickets.length} total)
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

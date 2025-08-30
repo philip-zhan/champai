@@ -15,6 +15,7 @@ interface Ticket {
   via_channel: string | null;
   zendesk_created_at: string | null;
   zendesk_updated_at: string | null;
+  commentCount: number;
 }
 
 interface TicketsResponse {
@@ -149,6 +150,19 @@ export default function TicketsTableClient() {
             </th>
             <th 
               className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+                sortConfig.field === "commentCount" 
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
+              onClick={() => handleSort("commentCount")}
+            >
+              <div className="flex items-center gap-1">
+                <span>Comments</span>
+                {getSortIcon("commentCount")}
+              </div>
+            </th>
+            <th 
+              className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
                 sortConfig.field === "zendesk_created_at" 
                   ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
                   : "text-gray-500 hover:bg-gray-100"
@@ -235,6 +249,21 @@ export default function TicketsTableClient() {
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {ticket.via_channel || "Unknown"}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center justify-center">
+                    <span className={`inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-medium rounded-full ${
+                      ticket.commentCount === 0
+                        ? "bg-gray-100 text-gray-500"
+                        : ticket.commentCount <= 3
+                        ? "bg-blue-100 text-blue-700"
+                        : ticket.commentCount <= 10
+                        ? "bg-orange-100 text-orange-700"
+                        : "bg-red-100 text-red-700"
+                    }`}>
+                      {ticket.commentCount}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {ticket.zendesk_created_at 

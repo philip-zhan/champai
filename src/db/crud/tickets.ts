@@ -46,7 +46,7 @@ export async function getTicketsPaginated(
   sortBy: string = "zendesk_updated_at",
   sortOrder: "asc" | "desc" = "desc"
 ): Promise<{
-  tickets: InferSelectModel<typeof tickets>[];
+  tickets: (InferSelectModel<typeof tickets> & { commentCount: number })[];
   total: number;
   hasMore: boolean;
 }> {
@@ -70,13 +70,46 @@ export async function getTicketsPaginated(
     case "status":
       orderByClause = sortOrder === "asc" ? asc(tickets.status) : desc(tickets.status);
       break;
+    case "commentCount":
+      orderByClause = sortOrder === "asc" ? sql`commentCount ASC` : sql`commentCount DESC`;
+      break;
     default:
       orderByClause = desc(tickets.zendesk_updated_at);
   }
 
   const [ticketsResult, totalResult] = await Promise.all([
     db
-      .select()
+      .select({
+        id: tickets.id,
+        zendesk_id: tickets.zendesk_id,
+        raw: tickets.raw,
+        url: tickets.url,
+        via_channel: tickets.via_channel,
+        zendesk_created_at: tickets.zendesk_created_at,
+        zendesk_updated_at: tickets.zendesk_updated_at,
+        subject: tickets.subject,
+        raw_subject: tickets.raw_subject,
+        description: tickets.description,
+        status: tickets.status,
+        priority: tickets.priority,
+        is_public: tickets.is_public,
+        tags: tickets.tags,
+        submitter_id: tickets.submitter_id,
+        requester_id: tickets.requester_id,
+        assignee_id: tickets.assignee_id,
+        organization_id: tickets.organization_id,
+        group_id: tickets.group_id,
+        collaborator_ids: tickets.collaborator_ids,
+        follower_ids: tickets.follower_ids,
+        created_at: tickets.created_at,
+        updated_at: tickets.updated_at,
+        deleted_at: tickets.deleted_at,
+        commentCount: sql<number>`(
+          SELECT COUNT(*)::int 
+          FROM ticket_comments 
+          WHERE zendesk_ticket_id = ${tickets.zendesk_id}
+        )`
+      })
       .from(tickets)
       .orderBy(orderByClause)
       .limit(limit)

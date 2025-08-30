@@ -1,6 +1,6 @@
 import { syncTicketsAction } from "./actions";
 import ZendeskSyncForm from "./components/ZendeskSyncForm";
-import TicketsTable from "./components/TicketsTable";
+import TicketsTableClient from "./components/TicketsTableClient";
 
 export default function Home() {
   return (
@@ -22,7 +22,7 @@ export default function Home() {
               View all tickets imported from Zendesk
             </p>
           </div>
-          <TicketsTable />
+          <TicketsTableClient />
         </div>
       </div>
     </div>

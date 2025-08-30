@@ -39,3 +39,33 @@ export async function upsertTicketsByZendeskId(
 export async function getAllTickets(): Promise<InferSelectModel<typeof tickets>[]> {
   return await db.select().from(tickets).orderBy(tickets.zendesk_updated_at);
 }
+
+export async function getTicketsPaginated(
+  page: number = 1,
+  limit: number = 50
+): Promise<{
+  tickets: InferSelectModel<typeof tickets>[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const offset = (page - 1) * limit;
+  
+  const [ticketsResult, totalResult] = await Promise.all([
+    db
+      .select()
+      .from(tickets)
+      .orderBy(tickets.zendesk_updated_at)
+      .limit(limit)
+      .offset(offset),
+    db.select({ count: sql<number>`count(*)` }).from(tickets)
+  ]);
+
+  const total = totalResult[0]?.count || 0;
+  const hasMore = offset + limit < total;
+
+  return {
+    tickets: ticketsResult,
+    total,
+    hasMore
+  };
+}

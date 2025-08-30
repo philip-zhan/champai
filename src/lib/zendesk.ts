@@ -25,7 +25,5 @@ export async function getTickets() {
   if (error) {
     console.error(error);
   }
-  console.log(data);
-
   return data;
 }

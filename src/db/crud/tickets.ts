@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema/tickets";
 import { sql } from "drizzle-orm";
-import { InferInsertModel } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export async function upsertTicketsByZendeskId(
   payload: InferInsertModel<typeof tickets>[]
@@ -34,4 +34,8 @@ export async function upsertTicketsByZendeskId(
       },
     });
   return result;
+}
+
+export async function getAllTickets(): Promise<InferSelectModel<typeof tickets>[]> {
+  return await db.select().from(tickets).orderBy(tickets.zendesk_updated_at);
 }

@@ -9,6 +9,11 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "zendesk_updated_at";
     const sortOrder = searchParams.get("sortOrder") || "desc";
 
+    // Get filter parameters
+    const priorityFilters = searchParams.getAll("priority");
+    const statusFilters = searchParams.getAll("status");
+    const channelFilters = searchParams.getAll("channel");
+
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
         { error: "Invalid page or limit parameters" },
@@ -23,6 +28,8 @@ export async function GET(request: NextRequest) {
         "subject",
         "priority",
         "status",
+        "via_channel",
+        "commentCount",
       ].includes(sortBy)
     ) {
       return NextResponse.json(
@@ -45,7 +52,36 @@ export async function GET(request: NextRequest) {
       sortOrder as "asc" | "desc"
     );
 
-    return NextResponse.json(result);
+    // Apply filters to the result
+    let filteredTickets = result.tickets;
+
+    if (priorityFilters.length > 0) {
+      filteredTickets = filteredTickets.filter(ticket => 
+        ticket.priority && priorityFilters.includes(ticket.priority)
+      );
+    }
+
+    if (statusFilters.length > 0) {
+      filteredTickets = filteredTickets.filter(ticket => 
+        ticket.status && statusFilters.includes(ticket.status)
+      );
+    }
+
+    if (channelFilters.length > 0) {
+      filteredTickets = filteredTickets.filter(ticket => 
+        ticket.via_channel && channelFilters.includes(ticket.via_channel)
+      );
+    }
+
+    // Update total count and hasMore based on filtered results
+    const filteredTotal = filteredTickets.length;
+    const hasMore = (page - 1) * limit + filteredTickets.length < result.total;
+
+    return NextResponse.json({
+      tickets: filteredTickets,
+      total: filteredTotal,
+      hasMore,
+    });
   } catch (error) {
     console.error("Error fetching tickets:", error);
     return NextResponse.json(

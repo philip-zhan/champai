@@ -201,10 +201,10 @@ export default function TicketsTableClient() {
   // Get tickets for display with deduplication
   const allTickets = React.useMemo(() => {
     if (!data?.pages) return [];
-    
+
     const seenIds = new Set<number>();
     const uniqueTickets: Ticket[] = [];
-    
+
     for (const page of data.pages) {
       for (const ticket of page.tickets) {
         if (!seenIds.has(ticket.id)) {
@@ -213,7 +213,7 @@ export default function TicketsTableClient() {
         }
       }
     }
-    
+
     return uniqueTickets;
   }, [data?.pages]);
 
@@ -275,17 +275,8 @@ export default function TicketsTableClient() {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                 Channel
               </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                  sortConfig.field === "commentCount"
-                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
-                onClick={() => handleSort("commentCount")}
-              >
-                <div className="flex items-center gap-1">
-                  <span>Comments</span>
-                </div>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                Comments
               </th>
               <th
                 className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${

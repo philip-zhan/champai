@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import React from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import TicketsFilters, { FilterConfig } from "./TicketsFilters";
 
@@ -197,6 +198,25 @@ export default function TicketsTableClient() {
     [isLoading, hasNextPage, fetchNextPage]
   );
 
+  // Get tickets for display with deduplication
+  const allTickets = React.useMemo(() => {
+    if (!data?.pages) return [];
+    
+    const seenIds = new Set<number>();
+    const uniqueTickets: Ticket[] = [];
+    
+    for (const page of data.pages) {
+      for (const ticket of page.tickets) {
+        if (!seenIds.has(ticket.id)) {
+          seenIds.add(ticket.id);
+          uniqueTickets.push(ticket);
+        }
+      }
+    }
+    
+    return uniqueTickets;
+  }, [data?.pages]);
+
   if (isLoading) {
     return (
       <div className="text-center py-8 text-gray-500">Loading tickets...</div>
@@ -210,9 +230,6 @@ export default function TicketsTableClient() {
       </div>
     );
   }
-
-  // Get tickets for display
-  const allTickets = data?.pages.flatMap((page) => page.tickets) || [];
 
   if (allTickets.length === 0) {
     return (
@@ -303,7 +320,7 @@ export default function TicketsTableClient() {
               const isLast = index === allTickets.length - 1;
               return (
                 <tr
-                  key={ticket.id}
+                  key={`ticket-${ticket.id}-${index}`}
                   ref={isLast ? lastTicketRef : undefined}
                   className="hover:bg-gray-50"
                 >

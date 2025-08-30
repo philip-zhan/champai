@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema/tickets";
-import { sql, asc, desc } from "drizzle-orm";
+import { sql, asc, desc, and, inArray } from "drizzle-orm";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export async function upsertTicketsByZendeskId(
@@ -44,13 +44,35 @@ export async function getTicketsPaginated(
   page: number = 1,
   limit: number = 50,
   sortBy: string = "zendesk_updated_at",
-  sortOrder: "asc" | "desc" = "desc"
+  sortOrder: "asc" | "desc" = "desc",
+  filters: {
+    priorities?: string[];
+    statuses?: string[];
+    channels?: string[];
+  } = {}
 ): Promise<{
   tickets: (InferSelectModel<typeof tickets> & { commentCount: number })[];
   total: number;
   hasMore: boolean;
 }> {
   const offset = (page - 1) * limit;
+  
+  // Build where clauses based on filters
+  const whereConditions = [];
+  
+  if (filters.priorities && filters.priorities.length > 0) {
+    whereConditions.push(inArray(tickets.priority, filters.priorities));
+  }
+  
+  if (filters.statuses && filters.statuses.length > 0) {
+    whereConditions.push(inArray(tickets.status, filters.statuses));
+  }
+  
+  if (filters.channels && filters.channels.length > 0) {
+    whereConditions.push(inArray(tickets.via_channel, filters.channels));
+  }
+  
+  const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
   
   // Build the order by clause based on sortBy and sortOrder
   let orderByClause;
@@ -111,10 +133,11 @@ export async function getTicketsPaginated(
         )`
       })
       .from(tickets)
+      .where(whereClause)
       .orderBy(orderByClause)
       .limit(limit)
       .offset(offset),
-    db.select({ count: sql<number>`count(*)` }).from(tickets)
+    db.select({ count: sql<number>`count(*)` }).from(tickets).where(whereClause)
   ]);
 
   const total = totalResult[0]?.count || 0;

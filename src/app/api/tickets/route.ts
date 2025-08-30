@@ -45,42 +45,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Build filters object for database query
+    const filters = {
+      priorities: priorityFilters.length > 0 ? priorityFilters : undefined,
+      statuses: statusFilters.length > 0 ? statusFilters : undefined,
+      channels: channelFilters.length > 0 ? channelFilters : undefined,
+    };
+
     const result = await getTicketsPaginated(
       page,
       limit,
       sortBy,
-      sortOrder as "asc" | "desc"
+      sortOrder as "asc" | "desc",
+      filters
     );
 
-    // Apply filters to the result
-    let filteredTickets = result.tickets;
-
-    if (priorityFilters.length > 0) {
-      filteredTickets = filteredTickets.filter(ticket => 
-        ticket.priority && priorityFilters.includes(ticket.priority)
-      );
-    }
-
-    if (statusFilters.length > 0) {
-      filteredTickets = filteredTickets.filter(ticket => 
-        ticket.status && statusFilters.includes(ticket.status)
-      );
-    }
-
-    if (channelFilters.length > 0) {
-      filteredTickets = filteredTickets.filter(ticket => 
-        ticket.via_channel && channelFilters.includes(ticket.via_channel)
-      );
-    }
-
-    // Update total count and hasMore based on filtered results
-    const filteredTotal = filteredTickets.length;
-    const hasMore = (page - 1) * limit + filteredTickets.length < result.total;
-
     return NextResponse.json({
-      tickets: filteredTickets,
-      total: filteredTotal,
-      hasMore,
+      tickets: result.tickets,
+      total: result.total,
+      hasMore: result.hasMore,
     });
   } catch (error) {
     console.error("Error fetching tickets:", error);

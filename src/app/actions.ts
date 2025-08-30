@@ -6,8 +6,21 @@ import { upsertTicketComments } from "@/db/crud/ticketComments";
 
 export async function syncTicketsAction() {
   const startTime = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30; // 30 days
-  syncTickets(startTime);
-  syncTicketEvents(startTime);
+  
+  try {
+    console.log("Starting Zendesk sync...");
+    
+    // Wait for both sync operations to complete
+    await Promise.all([
+      syncTickets(startTime),
+      syncTicketEvents(startTime)
+    ]);
+    
+    console.log("Zendesk sync completed successfully");
+  } catch (error) {
+    console.error("Zendesk sync failed:", error);
+    throw error; // Re-throw to show error in UI
+  }
 }
 
 async function syncTickets(startTime: number) {

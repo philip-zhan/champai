@@ -3,6 +3,7 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Ticket {
   id: number;
@@ -63,7 +64,6 @@ export default function TicketsTableClient() {
     isFetchingNextPage,
     isLoading,
     error,
-    refetch,
   } = useInfiniteQuery({
     queryKey: ["tickets", sortConfig.field, sortConfig.order],
     queryFn: ({ pageParam = 1 }) => fetchTickets(pageParam, sortConfig.field, sortConfig.order),
@@ -84,9 +84,11 @@ export default function TicketsTableClient() {
 
   const getSortIcon = (field: string) => {
     if (sortConfig.field !== field) {
-      return "↕️";
+      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
     }
-    return sortConfig.order === "asc" ? "↑" : "↓";
+    return sortConfig.order === "asc" 
+      ? <ArrowUp className="w-4 h-4 text-blue-600" /> 
+      : <ArrowDown className="w-4 h-4 text-blue-600" />;
   };
 
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -149,19 +151,29 @@ export default function TicketsTableClient() {
               Channel
             </th>
             <th 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+              className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+                sortConfig.field === "zendesk_created_at" 
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
               onClick={() => handleSort("zendesk_created_at")}
             >
-              <div className="flex items-center gap-1">
-                Created {getSortIcon("zendesk_created_at")}
+              <div className="flex items-center gap-2">
+                <span>Created</span>
+                {getSortIcon("zendesk_created_at")}
               </div>
             </th>
             <th 
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none"
+              className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+                sortConfig.field === "zendesk_updated_at" 
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                  : "text-gray-500 hover:bg-gray-100"
+              }`}
               onClick={() => handleSort("zendesk_updated_at")}
             >
-              <div className="flex items-center gap-1">
-                Updated {getSortIcon("zendesk_updated_at")}
+              <div className="flex items-center gap-2">
+                <span>Updated</span>
+                {getSortIcon("zendesk_updated_at")}
               </div>
             </th>
           </tr>

@@ -132,26 +132,23 @@ export default function TicketsTableClient() {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+      <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm text-sm">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-              Subject
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200 w-1/3">
+              Ticket Details
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
-              Description
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Priority
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Channel
             </th>
             <th 
-              className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+              className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
                 sortConfig.field === "zendesk_created_at" 
                   ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
                   : "text-gray-500 hover:bg-gray-100"
@@ -164,14 +161,14 @@ export default function TicketsTableClient() {
               </div>
             </th>
             <th 
-              className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
+              className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
                 sortConfig.field === "zendesk_updated_at" 
                   ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
                   : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => handleSort("zendesk_updated_at")}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <span>Updated</span>
                 {getSortIcon("zendesk_updated_at")}
               </div>
@@ -187,13 +184,22 @@ export default function TicketsTableClient() {
                 ref={isLast ? lastTicketRef : undefined}
                 className="hover:bg-gray-50"
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {ticket.subject || ticket.raw_subject || "No subject"}
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  <div className="space-y-1">
+                    <div className="font-medium text-gray-900">
+                      {ticket.subject || ticket.raw_subject || "No subject"}
+                    </div>
+                    <div className="text-gray-600 text-xs max-w-xs">
+                      {ticket.description 
+                        ? (ticket.description.length > 120 
+                            ? `${ticket.description.substring(0, 120)}...` 
+                            : ticket.description)
+                        : "No description"
+                      }
+                    </div>
+                  </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {ticket.description || "No description"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-3 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       ticket.priority === "urgent"
@@ -210,7 +216,7 @@ export default function TicketsTableClient() {
                     {ticket.priority || "Not set"}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-3 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       ticket.status === "open"
@@ -227,10 +233,10 @@ export default function TicketsTableClient() {
                     {ticket.status || "Unknown"}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {ticket.via_channel || "Unknown"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {ticket.zendesk_created_at 
                     ? new Date(ticket.zendesk_created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -242,7 +248,7 @@ export default function TicketsTableClient() {
                     : 'Unknown'
                   }
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   {ticket.zendesk_updated_at 
                     ? new Date(ticket.zendesk_updated_at).toLocaleDateString('en-US', {
                         year: 'numeric',

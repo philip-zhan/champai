@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
@@ -82,7 +82,7 @@ async function fetchFilterValues(): Promise<FilterValues> {
 export default function TicketsTableClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const isUpdatingFromUrlRef = useRef(false);
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: searchParams.get("sortBy") || "zendesk_updated_at",
@@ -106,16 +106,16 @@ export default function TicketsTableClient() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Update URL when sort config or filters change
+  // Update URL when sort config or filters change (but not when syncing from URL)
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
+    if (isUpdatingFromUrlRef.current) {
+      isUpdatingFromUrlRef.current = false;
+      return;
+    }
+
+    const params = new URLSearchParams();
     params.set("sortBy", sortConfig.field);
     params.set("sortOrder", sortConfig.order);
-
-    // Clear existing filter params
-    params.delete("priority");
-    params.delete("status");
-    params.delete("channel");
 
     // Add current filter params
     filters.priority.forEach((p) => params.append("priority", p));
@@ -123,24 +123,22 @@ export default function TicketsTableClient() {
     filters.channel.forEach((c) => params.append("channel", c));
 
     router.replace(`?${params.toString()}`, { scroll: false });
+  }, [sortConfig, filters, router]);
 
-    // Reset the query data when sorting or filtering changes to ensure fresh data
-    queryClient.removeQueries({ queryKey: ["tickets"] });
-  }, [sortConfig, filters, searchParams, router, queryClient]);
-
-  // Sync filters from URL when navigating back/forward or manually editing URL
-  useEffect(() => {
+  // Sync filters from URL when URL changes (browser back/forward, initial load, etc.)
+  const syncFiltersFromUrl = useCallback(() => {
     const urlPriority = searchParams.getAll("priority");
     const urlStatus = searchParams.getAll("status");
     const urlChannel = searchParams.getAll("channel");
 
-    // Only update if the URL values are different from current filter state
+    // Only update state if URL values are different from current filter state
     const shouldUpdate =
-      JSON.stringify(urlPriority) !== JSON.stringify(filters.priority) ||
-      JSON.stringify(urlStatus) !== JSON.stringify(filters.status) ||
-      JSON.stringify(urlChannel) !== JSON.stringify(filters.channel);
+      JSON.stringify(urlPriority.sort()) !== JSON.stringify(filters.priority.sort()) ||
+      JSON.stringify(urlStatus.sort()) !== JSON.stringify(filters.status.sort()) ||
+      JSON.stringify(urlChannel.sort()) !== JSON.stringify(filters.channel.sort());
 
     if (shouldUpdate) {
+      isUpdatingFromUrlRef.current = true;
       setFilters({
         priority: urlPriority,
         status: urlStatus,
@@ -148,6 +146,10 @@ export default function TicketsTableClient() {
       });
     }
   }, [searchParams, filters.priority, filters.status, filters.channel]);
+
+  useEffect(() => {
+    syncFiltersFromUrl();
+  }, [syncFiltersFromUrl]);
 
   const {
     data,

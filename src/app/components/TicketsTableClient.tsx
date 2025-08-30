@@ -43,6 +43,7 @@ export default function TicketsTableClient() {
       return pages.length + 1;
     },
     initialPageParam: 1,
+    refetchInterval: 5000,
   });
 
   const observerRef = useRef<IntersectionObserver | null>(null);

@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema/tickets";
-import { sql } from "drizzle-orm";
+import { sql, asc, desc } from "drizzle-orm";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export async function upsertTicketsByZendeskId(
@@ -52,33 +52,33 @@ export async function getTicketsPaginated(
 }> {
   const offset = (page - 1) * limit;
   
-  // Build the order by clause based on sortBy
+  // Build the order by clause based on sortBy and sortOrder
   let orderByClause;
   switch (sortBy) {
     case "zendesk_created_at":
-      orderByClause = sortOrder === "asc" ? tickets.zendesk_created_at : tickets.zendesk_created_at;
+      orderByClause = sortOrder === "asc" ? asc(tickets.zendesk_created_at) : desc(tickets.zendesk_created_at);
       break;
     case "zendesk_updated_at":
-      orderByClause = sortOrder === "asc" ? tickets.zendesk_updated_at : tickets.zendesk_updated_at;
+      orderByClause = sortOrder === "asc" ? asc(tickets.zendesk_updated_at) : desc(tickets.zendesk_updated_at);
       break;
     case "subject":
-      orderByClause = sortOrder === "asc" ? tickets.subject : tickets.subject;
+      orderByClause = sortOrder === "asc" ? asc(tickets.subject) : desc(tickets.subject);
       break;
     case "priority":
-      orderByClause = sortOrder === "asc" ? tickets.priority : tickets.priority;
+      orderByClause = sortOrder === "asc" ? asc(tickets.priority) : desc(tickets.priority);
       break;
     case "status":
-      orderByClause = sortOrder === "asc" ? tickets.status : tickets.status;
+      orderByClause = sortOrder === "asc" ? asc(tickets.status) : desc(tickets.status);
       break;
     default:
-      orderByClause = tickets.zendesk_updated_at;
+      orderByClause = desc(tickets.zendesk_updated_at);
   }
 
   const [ticketsResult, totalResult] = await Promise.all([
     db
       .select()
       .from(tickets)
-      .orderBy(sortOrder === "asc" ? orderByClause : orderByClause)
+      .orderBy(orderByClause)
       .limit(limit)
       .offset(offset),
     db.select({ count: sql<number>`count(*)` }).from(tickets)

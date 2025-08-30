@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -38,6 +38,7 @@ async function fetchTickets(page: number, sortBy: string, sortOrder: string): Pr
 export default function TicketsTableClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: searchParams.get("sortBy") || "zendesk_updated_at",
@@ -50,7 +51,10 @@ export default function TicketsTableClient() {
     params.set("sortBy", sortConfig.field);
     params.set("sortOrder", sortConfig.order);
     router.replace(`?${params.toString()}`, { scroll: false });
-  }, [sortConfig, searchParams, router]);
+    
+    // Reset the query data when sorting changes to ensure fresh data
+    queryClient.removeQueries({ queryKey: ["tickets"] });
+  }, [sortConfig, searchParams, router, queryClient]);
 
   const {
     data,

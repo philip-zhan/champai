@@ -11,7 +11,18 @@ export async function upsertTicketsByZendeskId(
     .onConflictDoUpdate({
       target: [tickets.zendesk_id],
       set: {
-        ...tickets,
+        raw: tickets.raw,
+        url: tickets.url,
+        via_channel: tickets.via_channel,
+        zendesk_created_at: tickets.zendesk_created_at,
+        zendesk_updated_at: tickets.zendesk_updated_at,
+        subject: tickets.subject,
+        raw_subject: tickets.raw_subject,
+        description: tickets.description,
+        status: tickets.status,
+        priority: tickets.priority,
+        is_public: tickets.is_public,
+        updated_at: tickets.updated_at,
       },
     });
   return result;

@@ -9,7 +9,7 @@ const zendeskClient = createClient<paths>({
 });
 
 export async function getTickets() {
-  const lookBackWindow = 1000 * 60 * 60 * 24 * 30; // 30 days
+  const lookBackWindow = 60 * 60 * 24 * 30; // 30 days
 
   const { data, error } = await zendeskClient.GET(
     "/api/v2/incremental/tickets/cursor",

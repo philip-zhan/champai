@@ -33,6 +33,14 @@ async function syncTickets(startTime: number) {
     status: ticket.status,
     priority: ticket.priority,
     is_public: ticket.is_public,
+    tags: ticket.tags,
+    assignee_id: ticket.assignee_id,
+    submitter_id: ticket.submitter_id,
+    requester_id: ticket.requester_id,
+    organization_id: ticket.organization_id,
+    group_id: ticket.group_id,
+    collaborator_ids: ticket.collaborator_ids,
+    follower_ids: ticket.follower_ids,
   }));
 
   await upsertTicketsByZendeskId(dbPayload);

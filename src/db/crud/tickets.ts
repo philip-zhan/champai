@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema/tickets";
+import { sql } from "drizzle-orm";
 import { InferInsertModel } from "drizzle-orm";
 
 export async function upsertTicketsByZendeskId(
@@ -11,18 +12,25 @@ export async function upsertTicketsByZendeskId(
     .onConflictDoUpdate({
       target: [tickets.zendesk_id],
       set: {
-        raw: tickets.raw,
-        url: tickets.url,
-        via_channel: tickets.via_channel,
-        zendesk_created_at: tickets.zendesk_created_at,
-        zendesk_updated_at: tickets.zendesk_updated_at,
-        subject: tickets.subject,
-        raw_subject: tickets.raw_subject,
-        description: tickets.description,
-        status: tickets.status,
-        priority: tickets.priority,
-        is_public: tickets.is_public,
-        updated_at: tickets.updated_at,
+        raw: sql`EXCLUDED.raw`,
+        url: sql`EXCLUDED.url`,
+        via_channel: sql`EXCLUDED.via_channel`,
+        zendesk_created_at: sql`EXCLUDED.zendesk_created_at`,
+        zendesk_updated_at: sql`EXCLUDED.zendesk_updated_at`,
+        subject: sql`EXCLUDED.subject`,
+        raw_subject: sql`EXCLUDED.raw_subject`,
+        description: sql`EXCLUDED.description`,
+        status: sql`EXCLUDED.status`,
+        priority: sql`EXCLUDED.priority`,
+        is_public: sql`EXCLUDED.is_public`,
+        tags: sql`EXCLUDED.tags`,
+        assignee_id: sql`EXCLUDED.assignee_id`,
+        submitter_id: sql`EXCLUDED.submitter_id`,
+        requester_id: sql`EXCLUDED.requester_id`,
+        organization_id: sql`EXCLUDED.organization_id`,
+        group_id: sql`EXCLUDED.group_id`,
+        collaborator_ids: sql`EXCLUDED.collaborator_ids`,
+        follower_ids: sql`EXCLUDED.follower_ids`,
       },
     });
   return result;

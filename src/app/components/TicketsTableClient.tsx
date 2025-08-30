@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import React from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import TicketsFilters, { FilterConfig } from "./TicketsFilters";
+import SearchBox from "./SearchBox";
 
 interface Ticket {
   id: number;
@@ -276,13 +277,17 @@ export default function TicketsTableClient() {
 
   return (
     <div className="space-y-4">
+      {/* Search */}
+      <SearchBox
+        searchInput={searchInput}
+        onSearchChange={handleSearchChange}
+        onSearchSubmit={handleSearchSubmit}
+      />
+
       {/* Filters */}
       <TicketsFilters
         filters={filters}
-        searchInput={searchInput}
         onFilterChange={handleFilterChange}
-        onSearchChange={handleSearchChange}
-        onSearchSubmit={handleSearchSubmit}
         onClearFilters={clearFilters}
       />
 

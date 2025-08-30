@@ -13,6 +13,7 @@
     "db:drop": "drizzle-kit drop"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.85.6",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "next": "15.5.2",

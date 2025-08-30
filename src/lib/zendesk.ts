@@ -8,20 +8,36 @@ const zendeskClient = createClient<paths>({
   },
 });
 
-export async function getTickets() {
-  const lookBackWindow = 60 * 60 * 24 * 30; // 30 days
-
+export async function getTickets(startTime: number) {
   const { data, error } = await zendeskClient.GET(
     "/api/v2/incremental/tickets/cursor",
     {
       params: {
         query: {
-          start_time: Math.floor(Date.now() / 1000) - lookBackWindow,
+          start_time: startTime,
         },
       },
     }
   );
 
+  if (error) {
+    console.error(error);
+  }
+  return data;
+}
+
+export async function getTicketEvents(startTime: number) {
+  const { data, error } = await zendeskClient.GET(
+    `/api/v2/incremental/ticket_events`,
+    {
+      params: {
+        query: {
+          start_time: startTime,
+          include: "comment_events",
+        },
+      },
+    }
+  );
   if (error) {
     console.error(error);
   }

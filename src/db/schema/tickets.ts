@@ -7,6 +7,8 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { timestamps } from "./_timestamps";
+import { relations } from "drizzle-orm";
+import { ticketComments } from "./ticketComments";
 
 export const tickets = pgTable("tickets", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -24,3 +26,7 @@ export const tickets = pgTable("tickets", {
   is_public: boolean(),
   ...timestamps,
 });
+
+export const ticketsRelations = relations(tickets, ({ many }) => ({
+  comments: many(ticketComments),
+}));

@@ -20096,6 +20096,7 @@ export interface components {
          *     }
          */
         TicketMetricEventBaseObject: {
+            child_events: any;
             /** @description If true, the event has been deleted */
             readonly deleted?: boolean;
             /** @description Automatically assigned when the record is created */

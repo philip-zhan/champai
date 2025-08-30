@@ -29,8 +29,14 @@ interface SortConfig {
   order: "asc" | "desc";
 }
 
-async function fetchTickets(page: number, sortBy: string, sortOrder: string): Promise<TicketsResponse> {
-  const response = await fetch(`/api/tickets?page=${page}&limit=50&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+async function fetchTickets(
+  page: number,
+  sortBy: string,
+  sortOrder: string
+): Promise<TicketsResponse> {
+  const response = await fetch(
+    `/api/tickets?page=${page}&limit=50&sortBy=${sortBy}&sortOrder=${sortOrder}`
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch tickets");
   }
@@ -41,10 +47,10 @@ export default function TicketsTableClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  
+
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: searchParams.get("sortBy") || "zendesk_updated_at",
-    order: (searchParams.get("sortOrder") as "asc" | "desc") || "desc"
+    order: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
   });
 
   // Update URL when sort config changes
@@ -53,7 +59,7 @@ export default function TicketsTableClient() {
     params.set("sortBy", sortConfig.field);
     params.set("sortOrder", sortConfig.order);
     router.replace(`?${params.toString()}`, { scroll: false });
-    
+
     // Reset the query data when sorting changes to ensure fresh data
     queryClient.removeQueries({ queryKey: ["tickets"] });
   }, [sortConfig, searchParams, router, queryClient]);
@@ -67,7 +73,8 @@ export default function TicketsTableClient() {
     error,
   } = useInfiniteQuery({
     queryKey: ["tickets", sortConfig.field, sortConfig.order],
-    queryFn: ({ pageParam = 1 }) => fetchTickets(pageParam, sortConfig.field, sortConfig.order),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchTickets(pageParam, sortConfig.field, sortConfig.order),
     getNextPageParam: (lastPage, pages) => {
       if (!lastPage.hasMore) return undefined;
       return pages.length + 1;
@@ -77,9 +84,9 @@ export default function TicketsTableClient() {
   });
 
   const handleSort = (field: string) => {
-    setSortConfig(prev => ({
+    setSortConfig((prev) => ({
       field,
-      order: prev.field === field && prev.order === "asc" ? "desc" : "asc"
+      order: prev.field === field && prev.order === "asc" ? "desc" : "asc",
     }));
   };
 
@@ -87,9 +94,11 @@ export default function TicketsTableClient() {
     if (sortConfig.field !== field) {
       return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
     }
-    return sortConfig.order === "asc" 
-      ? <ArrowUp className="w-4 h-4 text-blue-600" /> 
-      : <ArrowDown className="w-4 h-4 text-blue-600" />;
+    return sortConfig.order === "asc" ? (
+      <ArrowUp className="w-4 h-4 text-blue-600" />
+    ) : (
+      <ArrowDown className="w-4 h-4 text-blue-600" />
+    );
   };
 
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -148,23 +157,22 @@ export default function TicketsTableClient() {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Channel
             </th>
-            <th 
+            <th
               className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                sortConfig.field === "commentCount" 
-                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                sortConfig.field === "commentCount"
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                   : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => handleSort("commentCount")}
             >
               <div className="flex items-center gap-1">
                 <span>Comments</span>
-                {getSortIcon("commentCount")}
               </div>
             </th>
-            <th 
+            <th
               className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                sortConfig.field === "zendesk_created_at" 
-                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                sortConfig.field === "zendesk_created_at"
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                   : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => handleSort("zendesk_created_at")}
@@ -174,10 +182,10 @@ export default function TicketsTableClient() {
                 {getSortIcon("zendesk_created_at")}
               </div>
             </th>
-            <th 
+            <th
               className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-gray-200 cursor-pointer select-none transition-colors duration-150 ${
-                sortConfig.field === "zendesk_updated_at" 
-                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100" 
+                sortConfig.field === "zendesk_updated_at"
+                  ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                   : "text-gray-500 hover:bg-gray-100"
               }`}
               onClick={() => handleSort("zendesk_updated_at")}
@@ -204,12 +212,11 @@ export default function TicketsTableClient() {
                       {ticket.subject || ticket.raw_subject || "No subject"}
                     </div>
                     <div className="text-gray-600 text-xs max-w-xs">
-                      {ticket.description 
-                        ? (ticket.description.length > 120 
-                            ? `${ticket.description.substring(0, 120)}...` 
-                            : ticket.description)
-                        : "No description"
-                      }
+                      {ticket.description
+                        ? ticket.description.length > 120
+                          ? `${ticket.description.substring(0, 120)}...`
+                          : ticket.description
+                        : "No description"}
                     </div>
                   </div>
                 </td>
@@ -252,42 +259,48 @@ export default function TicketsTableClient() {
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center justify-center">
-                    <span className={`inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-medium rounded-full ${
-                      ticket.commentCount === 0
-                        ? "bg-gray-100 text-gray-500"
-                        : ticket.commentCount <= 3
-                        ? "bg-blue-100 text-blue-700"
-                        : ticket.commentCount <= 10
-                        ? "bg-orange-100 text-orange-700"
-                        : "bg-red-100 text-red-700"
-                    }`}>
+                    <span
+                      className={`inline-flex items-center justify-center min-w-6 h-6 px-2 text-xs font-medium rounded-full ${
+                        ticket.commentCount === 0
+                          ? "bg-gray-100 text-gray-500"
+                          : ticket.commentCount <= 3
+                          ? "bg-blue-100 text-blue-700"
+                          : ticket.commentCount <= 10
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {ticket.commentCount}
                     </span>
                   </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {ticket.zendesk_created_at 
-                    ? new Date(ticket.zendesk_created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                    : 'Unknown'
-                  }
+                  {ticket.zendesk_created_at
+                    ? new Date(ticket.zendesk_created_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : "Unknown"}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                  {ticket.zendesk_updated_at 
-                    ? new Date(ticket.zendesk_updated_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                    : 'Unknown'
-                  }
+                  {ticket.zendesk_updated_at
+                    ? new Date(ticket.zendesk_updated_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : "Unknown"}
                 </td>
               </tr>
             );

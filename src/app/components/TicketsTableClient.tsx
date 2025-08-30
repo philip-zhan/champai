@@ -53,6 +53,9 @@ async function fetchTickets(
   if (filters.channel.length > 0) {
     filters.channel.forEach((c) => params.append("channel", c));
   }
+  if (filters.search.trim()) {
+    params.append("search", filters.search.trim());
+  }
 
   const response = await fetch(`/api/tickets?${params.toString()}`);
   if (!response.ok) {
@@ -75,6 +78,7 @@ export default function TicketsTableClient() {
     priority: searchParams.getAll("priority"),
     status: searchParams.getAll("status"),
     channel: searchParams.getAll("channel"),
+    search: searchParams.get("search") || "",
   }));
 
   // Update URL when sort config or filters change (but not when syncing from URL)
@@ -92,6 +96,9 @@ export default function TicketsTableClient() {
     filters.priority.forEach((p) => params.append("priority", p));
     filters.status.forEach((s) => params.append("status", s));
     filters.channel.forEach((c) => params.append("channel", c));
+    if (filters.search.trim()) {
+      params.append("search", filters.search.trim());
+    }
 
     router.replace(`?${params.toString()}`, { scroll: false });
   }, [sortConfig, filters, router]);
@@ -101,6 +108,7 @@ export default function TicketsTableClient() {
     const urlPriority = searchParams.getAll("priority");
     const urlStatus = searchParams.getAll("status");
     const urlChannel = searchParams.getAll("channel");
+    const urlSearch = searchParams.get("search") || "";
 
     // Only update state if URL values are different from current filter state
     const shouldUpdate =
@@ -109,7 +117,8 @@ export default function TicketsTableClient() {
       JSON.stringify(urlStatus.sort()) !==
         JSON.stringify(filters.status.sort()) ||
       JSON.stringify(urlChannel.sort()) !==
-        JSON.stringify(filters.channel.sort());
+        JSON.stringify(filters.channel.sort()) ||
+      urlSearch !== filters.search;
 
     if (shouldUpdate) {
       isUpdatingFromUrlRef.current = true;
@@ -117,9 +126,10 @@ export default function TicketsTableClient() {
         priority: urlPriority,
         status: urlStatus,
         channel: urlChannel,
+        search: urlSearch,
       });
     }
-  }, [searchParams, filters.priority, filters.status, filters.channel]);
+  }, [searchParams, filters.priority, filters.status, filters.channel, filters.search]);
 
   useEffect(() => {
     syncFiltersFromUrl();
@@ -156,11 +166,26 @@ export default function TicketsTableClient() {
     value: string,
     checked: boolean
   ) => {
+    setFilters((prev) => {
+      if (filterType === 'search') {
+        // Search is handled separately by handleSearchChange
+        return prev;
+      }
+      
+      const filterArray = prev[filterType] as string[];
+      return {
+        ...prev,
+        [filterType]: checked
+          ? [...filterArray, value]
+          : filterArray.filter((item) => item !== value),
+      };
+    });
+  };
+
+  const handleSearchChange = (search: string) => {
     setFilters((prev) => ({
       ...prev,
-      [filterType]: checked
-        ? [...prev[filterType], value]
-        : prev[filterType].filter((item) => item !== value),
+      search,
     }));
   };
 
@@ -169,6 +194,7 @@ export default function TicketsTableClient() {
       priority: [],
       status: [],
       channel: [],
+      search: "",
     });
   };
 
@@ -245,6 +271,7 @@ export default function TicketsTableClient() {
       <TicketsFilters
         filters={filters}
         onFilterChange={handleFilterChange}
+        onSearchChange={handleSearchChange}
         onClearFilters={clearFilters}
       />
 
@@ -253,7 +280,8 @@ export default function TicketsTableClient() {
         Showing {allTickets.length} tickets
         {(filters.priority.length > 0 ||
           filters.status.length > 0 ||
-          filters.channel.length > 0) && (
+          filters.channel.length > 0 ||
+          filters.search.trim()) && (
           <span className="text-blue-600"> (filtered)</span>
         )}
       </div>

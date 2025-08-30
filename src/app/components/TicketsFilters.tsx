@@ -6,6 +6,7 @@ interface FilterConfig {
   priority: string[];
   status: string[];
   channel: string[];
+  search: string;
 }
 
 interface FilterValues {
@@ -21,6 +22,7 @@ interface TicketsFiltersProps {
     value: string,
     checked: boolean
   ) => void;
+  onSearchChange: (search: string) => void;
   onClearFilters: () => void;
 }
 
@@ -35,6 +37,7 @@ async function fetchFilterValues(): Promise<FilterValues> {
 export default function TicketsFilters({
   filters,
   onFilterChange,
+  onSearchChange,
   onClearFilters,
 }: TicketsFiltersProps) {
   // Fetch filter values using React Query
@@ -60,6 +63,20 @@ export default function TicketsFilters({
             Clear all filters
           </button>
         </div>
+      </div>
+
+      {/* Search Input */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Search tickets
+        </label>
+        <input
+          type="text"
+          value={filters.search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search by title or description..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
       </div>
 
       {isLoadingFilterValues ? (

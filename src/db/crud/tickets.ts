@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { tickets } from "@/db/schema/tickets";
-import { sql, asc, desc, and, inArray } from "drizzle-orm";
+import { sql, asc, desc, and, inArray, or, ilike } from "drizzle-orm";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export async function upsertTicketsByZendeskId(
@@ -49,6 +49,7 @@ export async function getTicketsPaginated(
     priorities?: string[];
     statuses?: string[];
     channels?: string[];
+    search?: string;
   } = {}
 ): Promise<{
   tickets: (InferSelectModel<typeof tickets> & { commentCount: number })[];
@@ -70,6 +71,17 @@ export async function getTicketsPaginated(
   
   if (filters.channels && filters.channels.length > 0) {
     whereConditions.push(inArray(tickets.via_channel, filters.channels));
+  }
+  
+  if (filters.search && filters.search.trim()) {
+    const searchTerm = `%${filters.search.trim()}%`;
+    whereConditions.push(
+      or(
+        ilike(tickets.subject, searchTerm),
+        ilike(tickets.raw_subject, searchTerm),
+        ilike(tickets.description, searchTerm)
+      )
+    );
   }
   
   const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;

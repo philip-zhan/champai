@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const priorityFilters = searchParams.getAll("priority");
     const statusFilters = searchParams.getAll("status");
     const channelFilters = searchParams.getAll("channel");
+    const searchQuery = searchParams.get("search");
 
     if (page < 1 || limit < 1 || limit > 100) {
       return NextResponse.json(
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
       priorities: priorityFilters.length > 0 ? priorityFilters : undefined,
       statuses: statusFilters.length > 0 ? statusFilters : undefined,
       channels: channelFilters.length > 0 ? channelFilters : undefined,
+      search: searchQuery || undefined,
     };
 
     const result = await getTicketsPaginated(

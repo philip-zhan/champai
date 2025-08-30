@@ -30,6 +30,7 @@
     "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "openapi-typescript": "^7.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.20.5",
     "typescript": "^5"

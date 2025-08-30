@@ -9,7 +9,7 @@ const zendeskClient = createClient<paths>({
 });
 
 export async function getTickets(startTime: number) {
-  const { data, error } = await zendeskClient.GET(
+  const { data, error, response } = await zendeskClient.GET(
     "/api/v2/incremental/tickets/cursor",
     {
       params: {
@@ -20,14 +20,47 @@ export async function getTickets(startTime: number) {
     }
   );
 
-  if (error) {
-    console.error(error);
+  // example total=10; remaining=7; resets=43
+  const rateLimitHeader = response?.headers.get(
+    "zendesk-ratelimit-incremental-exports"
+  );
+  const { remaining, resets } = parseRateLimitHeader(rateLimitHeader)!;
+  if (remaining === 0) {
+    console.warn("Rate limit reached");
+    return { tickets: null, retryAfter: resets };
   }
-  return data;
+
+  if (error) {
+    console.error("Zendesk API error:", error);
+    throw error;
+  }
+
+  return { tickets: data.tickets, retryAfter: null };
+}
+
+function parseRateLimitHeader(rateLimitHeader: string | null) {
+  console.log("Rate limit header:", rateLimitHeader);
+  if (!rateLimitHeader) {
+    console.warn("Rate limit header not found");
+    return null;
+  }
+  const parts = rateLimitHeader.split(";");
+  if (parts.length !== 3) {
+    console.warn("Rate limit header parts not found");
+    return null;
+  }
+  const total = parts[0]!.split("=")[1]!;
+  const remaining = parts[1]!.split("=")[1]!;
+  const resets = parts[2]!.split("=")[1]!;
+  return {
+    total: parseInt(total),
+    remaining: parseInt(remaining),
+    resets: parseInt(resets),
+  };
 }
 
 export async function getTicketEvents(startTime: number) {
-  const { data, error } = await zendeskClient.GET(
+  const { data, error, response } = await zendeskClient.GET(
     `/api/v2/incremental/ticket_events`,
     {
       params: {
@@ -38,8 +71,20 @@ export async function getTicketEvents(startTime: number) {
       },
     }
   );
-  if (error) {
-    console.error(error);
+
+  const rateLimitHeader = response?.headers.get(
+    "zendesk-ratelimit-incremental-exports"
+  );
+  const { remaining, resets } = parseRateLimitHeader(rateLimitHeader)!;
+  if (remaining === 0) {
+    console.warn("Rate limit reached");
+    return { ticketEvents: null, retryAfter: resets };
   }
-  return data;
+
+  if (error) {
+    console.error("Zendesk API error:", error);
+    throw error;
+  }
+
+  return { ticketEvents: data.ticket_events, retryAfter: null };
 }

@@ -11,6 +11,8 @@ interface Ticket {
   priority: string | null;
   status: string | null;
   via_channel: string | null;
+  zendesk_created_at: string | null;
+  zendesk_updated_at: string | null;
 }
 
 interface TicketsResponse {
@@ -105,6 +107,12 @@ export default function TicketsTableClient() {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
               Channel
             </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+              Created
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+              Updated
+            </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -158,6 +166,30 @@ export default function TicketsTableClient() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {ticket.via_channel || "Unknown"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {ticket.zendesk_created_at 
+                    ? new Date(ticket.zendesk_created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Unknown'
+                  }
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {ticket.zendesk_updated_at 
+                    ? new Date(ticket.zendesk_updated_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Unknown'
+                  }
                 </td>
               </tr>
             );

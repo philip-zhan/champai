@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   boolean,
+  bigint,
 } from "drizzle-orm/pg-core";
 import { timestamps } from "./_timestamps";
 import { relations } from "drizzle-orm";
@@ -24,6 +25,14 @@ export const tickets = pgTable("tickets", {
   status: text(),
   priority: text(),
   is_public: boolean(),
+  tags: text().array(),
+  submitter_id: bigint({ mode: "number" }),
+  requester_id: bigint({ mode: "number" }),
+  assignee_id: bigint({ mode: "number" }),
+  organization_id: bigint({ mode: "number" }),
+  group_id: bigint({ mode: "number" }),
+  collaborator_ids: bigint({ mode: "number" }).array(),
+  follower_ids: bigint({ mode: "number" }).array(),
   ...timestamps,
 });
 

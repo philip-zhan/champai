@@ -15,6 +15,13 @@
       "when": 1756533153734,
       "tag": "0001_sour_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1756533482141,
+      "tag": "0002_spicy_marvel_boy",
+      "breakpoints": true
     }
   ]
 }

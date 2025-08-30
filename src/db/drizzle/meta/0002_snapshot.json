@@ -1,0 +1,309 @@
+{
+  "id": "e048dd69-9af9-4a5f-a0c2-3668ee6f1d0b",
+  "prevId": "f8fc02bb-f1c4-44a5-9d29-0881627ebede",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.ticket_comments": {
+      "name": "ticket_comments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "ticket_comments_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "raw": {
+          "name": "raw",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zendesk_ticket_id": {
+          "name": "zendesk_ticket_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zendesk_event_id": {
+          "name": "zendesk_event_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zendesk_child_event_id": {
+          "name": "zendesk_child_event_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "via_channel": {
+          "name": "via_channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "html_body": {
+          "name": "html_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plain_body": {
+          "name": "plain_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zendesk_created_at": {
+          "name": "zendesk_created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "ticket_comments_zendesk_child_event_id_unique": {
+          "name": "ticket_comments_zendesk_child_event_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "zendesk_child_event_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tickets": {
+      "name": "tickets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "tickets_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "zendesk_id": {
+          "name": "zendesk_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw": {
+          "name": "raw",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "via_channel": {
+          "name": "via_channel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zendesk_created_at": {
+          "name": "zendesk_created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zendesk_updated_at": {
+          "name": "zendesk_updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_subject": {
+          "name": "raw_subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_public": {
+          "name": "is_public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitter_id": {
+          "name": "submitter_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requester_id": {
+          "name": "requester_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assignee_id": {
+          "name": "assignee_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "collaborator_ids": {
+          "name": "collaborator_ids",
+          "type": "bigint[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "follower_ids": {
+          "name": "follower_ids",
+          "type": "bigint[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tickets_zendesk_id_unique": {
+          "name": "tickets_zendesk_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "zendesk_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
